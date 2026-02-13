@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_SEEDS=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "temporal operator cluster health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:9080
+
+
+  django:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgres://little_jokebook:little_jokebook@postgres:5432/little_jokebook
+      - TEMPORAL_ADDRESS=temporal:7233
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/entrypoint.sh"]
+    command: ["/opt/venv/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+  worker:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    depends_on:
+      - temporal
+    command: ["/opt/venv/bin/python", "worker.py"]
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "9080:80"
+      - "9081:9081"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - django
+      - temporal-ui
+
+volumes:
+  pgdata:

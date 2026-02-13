@@ -9,4 +9,5 @@ dependencies = [
     "django>=6.0.2",
     "psycopg[binary]>=3.3.2",
     "python-dotenv>=1.2.1",
+    "temporalio>=1.22.0",
 ]
