@@ -30,6 +30,9 @@ docker-compose.override.yml
 .vscode/
 .idea/
 
+# Downloaded videos
+videos/
+
 # Logs
 *.log
 

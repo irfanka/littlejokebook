@@ -10,4 +10,5 @@ dependencies = [
     "psycopg[binary]>=3.3.2",
     "python-dotenv>=1.2.1",
     "temporalio>=1.22.0",
+    "yt-dlp>=2026.2.4",
 ]

@@ -2,6 +2,14 @@
 
 Scraper and AI-driven catalogue of stand-up comedians, their sets, and materials. Scrapes videos, transcribes them, analyzes with AI, and incrementally builds the catalogue. Domain models will evolve frequently.
 
+## Getting Up to Speed
+
+At the start of each session, run `git log --oneline -20` to understand recent project history and current state.
+
+## Dependencies
+
+This project uses **uv**. Always add dependencies with `uv add <package>`, never by editing `pyproject.toml` directly.
+
 ## Dev Environment
 
 ```bash
