@@ -46,6 +46,7 @@ services:
     build: .
     volumes:
       - .:/app
+    env_file: .env
     environment:
       - DATABASE_URL=postgres://little_jokebook:little_jokebook@postgres:5432/little_jokebook
       - TEMPORAL_ADDRESS=temporal:7233
@@ -61,8 +62,11 @@ services:
     build: .
     volumes:
       - .:/app
+    env_file: .env
     environment:
+      - DATABASE_URL=postgres://little_jokebook:little_jokebook@postgres:5432/little_jokebook
       - TEMPORAL_ADDRESS=temporal:7233
+      - DJANGO_ALLOW_ASYNC_UNSAFE=true
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
     depends_on:

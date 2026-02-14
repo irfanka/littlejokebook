@@ -35,6 +35,8 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = ["http://localhost:9080"]
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 
 # Application definition
 
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'catalogue',
     'ingestion',
 ]
 
