@@ -9,7 +9,7 @@ services:
       - "5436:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+      - ./backend/docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 2s
@@ -42,11 +42,12 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://localhost:9080,http://192.168.0.183:9081
 
-
   django:
-    build: .
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     volumes:
-      - .:/app
+      - ./backend:/app
     env_file: .env
     environment:
       - DATABASE_URL=postgres://little_jokebook:little_jokebook@postgres:5432/little_jokebook
@@ -61,9 +62,11 @@ services:
     command: ["/opt/venv/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]
 
   worker:
-    build: .
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     volumes:
-      - .:/app
+      - ./backend:/app
     env_file: .env
     environment:
       - DATABASE_URL=postgres://little_jokebook:little_jokebook@postgres:5432/little_jokebook
@@ -87,7 +90,7 @@ services:
       - "9080:80"
       - "9081:9081"
     volumes:
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./backend/docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - django
       - temporal-ui

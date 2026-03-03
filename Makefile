@@ -1,16 +1,18 @@
 .PHONY: start stop restart logs build
 
+COMPOSE := docker compose -f docker-compose.dev.yml
+
 start:
-	docker compose up -d
+	$(COMPOSE) up -d
 
 stop:
-	docker compose down
+	$(COMPOSE) down
 
 restart:
-	docker compose restart
+	$(COMPOSE) restart
 
 logs:
-	docker compose logs -f
+	$(COMPOSE) logs -f
 
 build:
-	docker compose up -d --build
+	$(COMPOSE) up -d --build
