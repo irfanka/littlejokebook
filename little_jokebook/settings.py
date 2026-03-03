@@ -33,9 +33,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["http://localhost:9080"]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:9080",
+    "http://192.168.0.183:9080",
+]
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 
 # Application definition

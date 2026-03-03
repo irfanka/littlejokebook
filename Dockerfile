@@ -13,4 +13,6 @@ RUN uv sync --frozen --no-install-project
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+ENTRYPOINT ["/entrypoint.sh"]
+
 COPY . .

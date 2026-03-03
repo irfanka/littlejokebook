@@ -4,6 +4,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data
     ports:
       - "5436:5432"
     volumes:
@@ -39,7 +40,7 @@ services:
       - temporal
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:9080
+      - TEMPORAL_CORS_ORIGINS=http://localhost:9080,http://192.168.0.183:9081
 
 
   django:
@@ -52,10 +53,11 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
+      - RUN_MIGRATIONS=1
+      - WAIT_FOR_TEMPORAL=0
     depends_on:
       postgres:
         condition: service_healthy
-    entrypoint: ["/entrypoint.sh"]
     command: ["/opt/venv/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]
 
   worker:
@@ -69,8 +71,14 @@ services:
       - DJANGO_ALLOW_ASYNC_UNSAFE=true
       - PYTHONUNBUFFERED=1
       - PYTHONDONTWRITEBYTECODE=1
+      - RUN_MIGRATIONS=0
+      - WAIT_FOR_TEMPORAL=1
     depends_on:
-      - temporal
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+    restart: unless-stopped
     command: ["/opt/venv/bin/python", "worker.py"]
 
   nginx:

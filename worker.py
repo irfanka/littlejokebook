@@ -9,8 +9,13 @@ django.setup()
 from temporalio.client import Client
 from temporalio.worker import Worker
 
-from activities.ingestion import analyze_segment, segment_video
-from workflows.ingestion import IngestionWorkflow
+from activities.ingestion import (
+    analyze_segment,
+    fetch_segment_infos,
+    refine_triplet,
+    segment_video,
+)
+from workflows.ingestion import IngestionWorkflow, RefinementWorkflow
 
 TEMPORAL_ADDRESS = os.getenv("TEMPORAL_ADDRESS", "localhost:7233")
 TASK_QUEUE = "little-jokebook"
@@ -21,8 +26,8 @@ async def main():
     worker = Worker(
         client,
         task_queue=TASK_QUEUE,
-        workflows=[IngestionWorkflow],
-        activities=[segment_video, analyze_segment],
+        workflows=[IngestionWorkflow, RefinementWorkflow],
+        activities=[segment_video, analyze_segment, refine_triplet, fetch_segment_infos],
     )
     print(f"Worker started, listening on task queue: {TASK_QUEUE}")
     await worker.run()
