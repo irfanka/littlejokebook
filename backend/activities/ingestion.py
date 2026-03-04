@@ -335,6 +335,7 @@ async def analyze_segment(input_data: dict) -> int:
             config={
                 "response_mime_type": "application/json",
                 "response_json_schema": TranscriptResult.model_json_schema(),
+                "max_output_tokens": 65536,
             },
             label=f"analyze_segment:{payload.segment_id}",
         )
@@ -384,6 +385,13 @@ Guidelines:
 - ONLY list NEW segment starts. Do not list the carried-over segment from the context unless a completely new segment of the same type starts.
 - Identify transitions between different performers, speakers, or activities.
 - Distinguish between prepared material (bits, sets) and spontaneous interaction (banter, crowd work, interviews).
+- **Within a single performer's set or standup special**, also identify major \
+THEMATIC transitions — when the comedian moves from one high-level topic or \
+theme to a distinctly different one (e.g., from politics to religion, from \
+aging to death, from relationships to technology). Each theme may contain \
+multiple related jokes or bits — group those together as ONE segment. \
+Do NOT split on individual jokes, callbacks, or brief asides — only on clear, \
+sustained topic shifts where the comedian moves to a new subject and stays there.
 - Name people when you can identify them. Keep descriptions concise but informative.
 - Ensure timestamps are in absolute video time (between {start_time_str} and {end_time_str}).
 """

@@ -1,0 +1,264 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  const comedians = await getCollection("comedians");
+  return comedians.map((comedian) => ({
+    params: { slug: comedian.data.slug },
+    props: { comedian },
+  }));
+}
+
+const { comedian } = Astro.props;
+const { name, segments } = comedian.data;
+
+function hash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+const hue = hash(name) % 360;
+
+const typeLabels: Record<string, string> = {
+  performance: "Stand-Up Sets",
+  interview: "Interviews",
+  musical_performance: "Musical",
+  intro: "Intros",
+  ad_read: "Ad Reads",
+  break: "Breaks",
+  outro: "Outros",
+};
+
+const typeOrder = ["performance","interview","musical_performance","intro","ad_read","break","outro"];
+
+const grouped = new Map<string, typeof segments>();
+for (const seg of segments) {
+  const t = seg.segment_type;
+  if (!grouped.has(t)) grouped.set(t, []);
+  grouped.get(t)!.push(seg);
+}
+
+const sortedGroups = [...grouped.entries()].sort(
+  (a, b) =>
+    (typeOrder.indexOf(a[0]) === -1 ? 99 : typeOrder.indexOf(a[0])) -
+    (typeOrder.indexOf(b[0]) === -1 ? 99 : typeOrder.indexOf(b[0]))
+);
+
+const performances = grouped.get("performance") || [];
+const totalSeconds = segments.reduce((s: number, seg: any) => s + (seg.end_time - seg.start_time), 0);
+const totalMin = Math.round(totalSeconds / 60);
+
+function fmtDuration(start: number, end: number): string {
+  const secs = end - start;
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+---
+
+<Layout title={`${name} — Little Jokebook`}>
+  <!-- Hero -->
+  <section class="hero" style={`--h: ${hue}`}>
+    <div class="hero-gradient" />
+    <div class="hero-content">
+      <a href="/comedians" class="back">← All Comedians</a>
+      <h1 class="name">{name}</h1>
+      <div class="stats">
+        <span>{segments.length} segments</span>
+        <span class="dot">·</span>
+        {performances.length > 0 && <><span>{performances.length} sets</span><span class="dot">·</span></>}
+        <span>{totalMin} min total</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Segments -->
+  <main class="content">
+    {sortedGroups.map(([type, segs]) => (
+      <section class="group">
+        <h2 class="group-label">{typeLabels[type] ?? type}</h2>
+        <div class="segments">
+          {segs.map((seg: any) => (
+            <a
+              href={`${seg.video_url}&t=${seg.start_time}`}
+              target="_blank"
+              rel="noopener"
+              class="seg"
+            >
+              <div class="seg-left">
+                <span class="seg-duration">{fmtDuration(seg.start_time, seg.end_time)}</span>
+              </div>
+              <div class="seg-body">
+                <p class="seg-desc">{seg.description}</p>
+                {seg.summary && <p class="seg-summary">{seg.summary}</p>}
+                {seg.comedians.length > 1 && (
+                  <p class="seg-feat">
+                    with {seg.comedians.filter((c: string) => c !== name).join(", ")}
+                  </p>
+                )}
+              </div>
+              <span class="seg-play" title="Watch on YouTube">▶</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+  </main>
+</Layout>
+
+<style define:vars={{ h: String(hue) }}>
+  /* Hero */
+  .hero {
+    position: relative;
+    padding: 8rem var(--gutter) 3rem;
+    background:
+      radial-gradient(
+        ellipse 60% 70% at 70% 20%,
+        hsla(var(--h), 40%, 16%, 0.7),
+        transparent
+      ),
+      var(--bg-deep);
+  }
+
+  .hero-gradient {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(to top, var(--bg-deep), transparent);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+  }
+
+  .back {
+    display: inline-block;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+  }
+  .back:hover { color: var(--text-bright); }
+
+  .name {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    letter-spacing: 0.04em;
+    line-height: 0.95;
+    color: var(--text-bright);
+  }
+
+  .stats {
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .dot { color: var(--text-dim); opacity: 0.4; }
+
+  /* Content */
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem var(--gutter) 5rem;
+  }
+
+  .group {
+    margin-top: 2.5rem;
+  }
+  .group:first-child {
+    margin-top: 0;
+  }
+
+  .group-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 0.7rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  /* Segment rows */
+  .segments {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .seg {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0.8rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  .seg:hover {
+    background: var(--bg-card);
+  }
+
+  .seg-left {
+    flex: 0 0 auto;
+    padding-top: 0.1rem;
+  }
+
+  .seg-duration {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .seg-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .seg-desc {
+    font-size: 0.9rem;
+    color: var(--text-bright);
+    line-height: 1.5;
+  }
+
+  .seg-summary {
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .seg-feat {
+    margin-top: 0.25rem;
+    font-size: 0.72rem;
+    color: var(--accent-warm);
+    opacity: 0.7;
+  }
+
+  .seg-play {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    padding-top: 0.15rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .seg:hover .seg-play {
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 6rem var(--gutter) 2rem; }
+    .seg { padding: 0.8rem 0.4rem; }
+    .seg-play { opacity: 0.5; }
+  }
+</style>

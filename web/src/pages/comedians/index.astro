@@ -1,0 +1,211 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+import ComedianCard from "../../components/ComedianCard.astro";
+import ComedianSearch, { prepareComedian } from "../../components/ComedianSearch";
+
+const comedians = await getCollection("comedians");
+
+// Sort by most segments
+const sorted = [...comedians].sort((a, b) => {
+  const diff = b.data.segments.length - a.data.segments.length;
+  return diff !== 0 ? diff : a.data.name.localeCompare(b.data.name);
+});
+
+// Featured: comedians with actual performances
+const withSets = sorted.filter((c) =>
+  c.data.segments.some((s) => s.segment_type === "performance"),
+);
+const hosts = sorted.filter(
+  (c) =>
+    c.data.segments.some((s) =>
+      ["intro", "interview"].includes(s.segment_type),
+    ) && !withSets.includes(c),
+);
+const everyone = sorted.sort((c1, c2) => {
+  return c1.data.name.localeCompare(c2.data.name);
+});
+---
+
+<Layout title="Comedians — Little Jokebook">
+  <div class="browse">
+    <!-- Hero banner: big featured comedian -->
+    {
+      withSets[0] && (
+        <section
+          class="hero"
+          style={`--hero-hue: ${Math.abs([...withSets[0].data.name].reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0)) % 360}`}
+        >
+          <div class="hero-content">
+            <span class="hero-tag">Featured Comedian</span>
+            <h1 class="hero-name">{withSets[0].data.name}</h1>
+            <p class="hero-meta">
+              {withSets[0].data.segments.length} segments ·
+              {
+                withSets[0].data.segments.filter(
+                  (s) => s.segment_type === "performance",
+                ).length
+              }{" "}
+              sets catalogued
+            </p>
+            <a href={`/comedians/${withSets[0].data.slug}`} class="hero-cta">
+              View Profile →
+            </a>
+          </div>
+          <div class="hero-gradient" />
+        </section>
+      )
+    }
+
+    <!-- Row: Comedians with sets -->
+    {
+      withSets.length > 0 && (
+        <section class="row">
+          <h2 class="row-title">Stand-Up Sets</h2>
+          <div class="row-scroll">
+            {withSets.map((c) => (
+              <ComedianCard comedian={c} size="large" />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Row: Hosts & Interviewers -->
+    {
+      hosts.length > 0 && (
+        <section class="row">
+          <h2 class="row-title">Hosts & Regulars</h2>
+          <div class="row-scroll">
+            {hosts.map((c) => (
+              <ComedianCard comedian={c} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Row: All -->
+    <section class="row">
+      <h2 class="row-title">All Comedians</h2>
+      <ComedianSearch
+        client:load
+        comedians={everyone.map((c) => prepareComedian(c.data))}
+      />
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .browse {
+    padding-top: 0;
+    padding-bottom: 4rem;
+  }
+
+  /* ──── Hero banner ──── */
+  .hero {
+    position: relative;
+    height: clamp(320px, 50vh, 500px);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 var(--gutter) 2.5rem;
+    background:
+      radial-gradient(
+        ellipse 70% 80% at 70% 30%,
+        hsla(var(--hero-hue), 40%, 18%, 0.7),
+        transparent
+      ),
+      var(--bg-deep);
+    overflow: hidden;
+  }
+
+  .hero-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, var(--bg-deep) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-warm);
+    margin-bottom: 0.6rem;
+  }
+
+  .hero-name {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 6vw, 5rem);
+    letter-spacing: 0.04em;
+    line-height: 0.95;
+    color: var(--text-bright);
+  }
+
+  .hero-meta {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .hero-cta {
+    display: inline-block;
+    margin-top: 1.2rem;
+    padding: 0.5rem 1.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bg-deep);
+    background: var(--text-bright);
+    border-radius: 4px;
+    transition:
+      background 0.2s,
+      transform 0.2s;
+  }
+  .hero-cta:hover {
+    background: var(--accent-warm);
+    transform: scale(1.03);
+  }
+
+  /* ──── Content rows ──── */
+  .row {
+    margin-top: var(--row-gap);
+    padding-left: var(--gutter);
+  }
+
+  .row-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 0.75rem;
+  }
+
+  .row-scroll {
+    display: flex;
+    gap: 0.9rem;
+    overflow-x: auto;
+    padding-right: var(--gutter);
+    padding-bottom: 0.75rem;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .row-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .row-scroll > :global(*) {
+    scroll-snap-align: start;
+  }
+
+
+</style>

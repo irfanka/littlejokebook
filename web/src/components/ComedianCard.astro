@@ -1,0 +1,166 @@
+---
+interface Props {
+  comedian: {
+    data: {
+      name: string;
+      slug: string;
+      segments: any[];
+    };
+  };
+  size?: "large" | "normal";
+}
+
+const { comedian, size = "normal" } = Astro.props;
+const { name, slug, segments } = comedian.data;
+
+const performanceCount = segments.filter(
+  (s: any) => s.segment_type === "performance"
+).length;
+
+// Deterministic color from name
+function hash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+const h = hash(name);
+const hue = h % 360;
+// Make sure saturation is rich, lightness is cinematic-dark
+const sat = 35 + (h % 25);   // 35–60
+const lit = 12 + (h % 8);    // 12–20
+
+const initials = name
+  .split(/\s+/)
+  .map((w: string) => w[0])
+  .join("")
+  .slice(0, 2)
+  .toUpperCase();
+---
+
+<a href={`/comedians/${slug}`} class:list={["card", size]}>
+  <div
+    class="poster"
+    style={`--h: ${hue}; --s: ${sat}%; --l: ${lit}%;`}
+  >
+    <!-- Mic silhouette SVG as atmospheric element -->
+    <svg class="mic-icon" viewBox="0 0 64 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="32" cy="28" rx="14" ry="22" stroke="currentColor" stroke-width="1.5" />
+      <path d="M18 34 C18 52 46 52 46 34" stroke="currentColor" stroke-width="1.5" fill="none" />
+      <line x1="32" y1="52" x2="32" y2="90" stroke="currentColor" stroke-width="1.5" />
+      <line x1="22" y1="90" x2="42" y2="90" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    </svg>
+    <span class="initials">{initials}</span>
+    <div class="poster-fade" />
+  </div>
+  <div class="info">
+    <span class="card-name">{name}</span>
+    {performanceCount > 0 && (
+      <span class="card-sets">{performanceCount} set{performanceCount !== 1 ? "s" : ""}</span>
+    )}
+  </div>
+</a>
+
+<style>
+  .card {
+    flex: 0 0 auto;
+    width: 170px;
+    cursor: pointer;
+    transition: transform 0.3s var(--ease);
+  }
+  .card.large {
+    width: 220px;
+  }
+
+  .card:hover {
+    transform: scale(1.05);
+    z-index: 2;
+  }
+
+  /* Poster */
+  .poster {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    border-radius: 6px;
+    overflow: hidden;
+    background: radial-gradient(
+        ellipse 80% 60% at 50% 30%,
+        hsla(var(--h), var(--s), calc(var(--l) + 12%), 0.6) 0%,
+        hsla(var(--h), var(--s), var(--l), 1) 100%
+      );
+  }
+
+  /* Mic silhouette: large, faint, positioned behind initials */
+  .mic-icon {
+    position: absolute;
+    bottom: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 55%;
+    color: hsla(var(--h), calc(var(--s) - 10%), calc(var(--l) + 6%), 0.15);
+  }
+
+  .initials {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    letter-spacing: 0.08em;
+    color: hsla(var(--h), 20%, 70%, 0.5);
+    z-index: 1;
+  }
+  .large .initials {
+    font-size: 4.5rem;
+  }
+
+  /* Bottom fade */
+  .poster-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, hsla(var(--h), var(--s), 5%, 0.9), transparent);
+    z-index: 1;
+  }
+
+  /* Hover: warm spotlight appears */
+  .card:hover .poster {
+    box-shadow:
+      0 8px 30px rgba(0, 0, 0, 0.6),
+      0 0 40px hsla(var(--h), 50%, 30%, 0.2);
+  }
+
+  /* Info */
+  .info {
+    padding: 0.5rem 0.15rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .card-name {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-bright);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.35;
+  }
+
+  .card-sets {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 640px) {
+    .card { width: 130px; }
+    .card.large { width: 160px; }
+    .initials { font-size: 2.5rem; }
+    .large .initials { font-size: 3.2rem; }
+  }
+</style>

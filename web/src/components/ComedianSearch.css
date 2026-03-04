@@ -1,0 +1,145 @@
+/* ──── Search bar ──── */
+.search-bar {
+  position: relative;
+  max-width: 340px;
+  margin-bottom: 1rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 0.55rem 0.75rem 0.55rem 2.25rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-bright);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-dim);
+}
+
+.search-bar input:focus {
+  border-color: var(--accent-warm-dim);
+  box-shadow: 0 0 0 3px rgba(229, 160, 13, 0.1);
+}
+
+.no-results {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  padding: 1rem 0;
+}
+
+/* ──── Card (React version) ──── */
+.card {
+  flex: 0 0 auto;
+  width: 170px;
+  cursor: pointer;
+  transition: transform 0.3s var(--ease);
+  text-decoration: none;
+  color: inherit;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  z-index: 2;
+}
+
+.poster {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 30%,
+    hsla(var(--h), var(--s), calc(var(--l) + 12%), 0.6) 0%,
+    hsla(var(--h), var(--s), var(--l), 1) 100%
+  );
+}
+
+.mic-icon {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 55%;
+  color: hsla(var(--h), calc(var(--s) - 10%), calc(var(--l) + 6%), 0.15);
+}
+
+.initials {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  letter-spacing: 0.08em;
+  color: hsla(var(--h), 20%, 70%, 0.5);
+  z-index: 1;
+}
+
+.poster-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, hsla(var(--h), var(--s), 5%, 0.9), transparent);
+  z-index: 1;
+}
+
+.card:hover .poster {
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.6),
+    0 0 40px hsla(var(--h), 50%, 30%, 0.2);
+}
+
+.info {
+  padding: 0.5rem 0.15rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.card-name {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+}
+
+.card-sets {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.row-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  padding-right: var(--gutter);
+  padding-bottom: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .card { width: 130px; }
+  .initials { font-size: 2.5rem; }
+}

@@ -1,4 +1,4 @@
-.PHONY: start stop restart logs build
+.PHONY: start stop restart logs build refresh
 
 COMPOSE := docker compose -f docker-compose.dev.yml
 
@@ -16,3 +16,6 @@ logs:
 
 build:
 	$(COMPOSE) up -d --build
+
+refresh:
+	$(COMPOSE) restart web

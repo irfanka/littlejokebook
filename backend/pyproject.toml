@@ -7,6 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "dj-database-url>=3.1.0",
     "django>=6.0.2",
+    "django-ninja>=1.5.3",
     "google-genai>=1.63.0",
     "litellm>=1.82.0",
     "psycopg[binary]>=3.3.2",

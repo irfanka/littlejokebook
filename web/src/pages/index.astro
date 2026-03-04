@@ -1,0 +1,73 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Little Jokebook">
+  <div class="hero">
+    <div class="hero-bg" />
+    <div class="hero-content">
+      <h1 class="title">Little<br />Jokebook</h1>
+      <p class="sub">Catalogued stand-up comedy.<br />Sets, segments, and transcripts — scraped and organized by AI.</p>
+      <a href="/comedians" class="cta">Browse Comedians →</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 2rem var(--gutter);
+    text-align: center;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 50% 40% at 50% 35%, hsla(30, 50%, 15%, 0.5), transparent),
+      radial-gradient(ellipse 40% 50% at 80% 70%, hsla(0, 40%, 12%, 0.4), transparent),
+      var(--bg-deep);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 14vw, 12rem);
+    letter-spacing: 0.06em;
+    line-height: 0.88;
+    color: var(--text-bright);
+  }
+
+  .sub {
+    margin-top: 1.5rem;
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 400px;
+    margin-inline: auto;
+  }
+
+  .cta {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.65rem 1.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--bg-deep);
+    background: var(--text-bright);
+    border-radius: 4px;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .cta:hover {
+    background: var(--accent-warm);
+    transform: scale(1.03);
+  }
+</style>

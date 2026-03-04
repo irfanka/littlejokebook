@@ -31,6 +31,7 @@ make logs     # tail all logs
 |------|------|
 | 9080 | Django (via nginx) |
 | 9081 | Temporal UI (via nginx) |
+| 9082 | Astro web (via nginx) |
 | 5436 | PostgreSQL 18 |
 
 ## Temporal Workflows
